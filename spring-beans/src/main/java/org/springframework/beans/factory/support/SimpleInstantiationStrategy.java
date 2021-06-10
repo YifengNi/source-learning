@@ -16,19 +16,19 @@
 
 package org.springframework.beans.factory.support;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.security.PrivilegedExceptionAction;
-
 import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.security.PrivilegedExceptionAction;
 
 /**
  * Simple object instantiation strategy for use in a BeanFactory.
@@ -57,6 +57,14 @@ public class SimpleInstantiationStrategy implements InstantiationStrategy {
 
 	@Override
 	public Object instantiate(RootBeanDefinition bd, String beanName, BeanFactory owner) {
+		// 如果有需要覆盖或者动态替换的方法则当然需要使用 calib进行动态代理,因为可以在创建代理的同时将动态方法织入类中,
+		// 但是如果没有需要动态改变得方法,为了方便直接反射就可以了
+		/**
+		 * 首先判断如果bd.getMethodOverrides()为空也就是用户没有使用replace或者lookup的配置方法,那么直接使用反射的方式,简单快捷。
+		 * 但是如果使用了这两个特性,再直接使用反射的方式创建实例就不妥了,因为需要将这两个配置提供的功能切
+		 * 入进去,所以就必须要使用动态代理的方式将包含两个特性所对应的逻辑的拦截增强器设置进去,
+		 * 这样才可以保证在调用方法的时候会被相应的拦截器增强,返回值为包含拦截器的代理实例。
+		 */
 		// Don't override the class with CGLIB if no overrides.
 		if (bd.getMethodOverrides().isEmpty()) {
 			Constructor<?> constructorToUse;
