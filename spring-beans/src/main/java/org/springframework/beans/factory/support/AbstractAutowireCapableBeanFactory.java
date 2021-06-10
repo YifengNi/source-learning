@@ -500,6 +500,13 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 						"' to allow for resolving potential circular references");
 			}
 			// 为解决循环依赖，在bean初始化前把ObjectFactory加入缓存中（提前暴露）
+			/**
+			 * A -> B, B -> A
+			 * Spring处理循环依赖的解决办法:在B中创建依赖A时通过 ObjectFactory提供的实例化方法来中断A中的属性填充,使B中持有的A
+			 * 仅仅是刚刚初始化并没有填充任何属性的A,而这正初始化A的步骤还是在最开始创建A的
+			 * 时候进行的,但是因为A与B中的A所表示的属性地址是一样的,所以在A中创建好的属性
+			 * 填充自然可以通过B中的A获取,这样就解决了循环依赖的问题。
+			 */
 			addSingletonFactory(beanName, new ObjectFactory<Object>() {
 				@Override
 				public Object getObject() throws BeansException {
