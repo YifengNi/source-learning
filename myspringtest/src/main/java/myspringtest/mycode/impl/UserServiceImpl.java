@@ -15,6 +15,7 @@ import java.util.Map;
  * @Date: 2021/5/21 10:38
  * @Description:
  */
+@Service
 public class UserServiceImpl implements IUserService {
 
     @Autowired

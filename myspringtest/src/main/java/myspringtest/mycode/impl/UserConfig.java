@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Configuration;
  * @Description:
  */
 @Configuration
-public class UserConfigure {
+public class UserConfig {
 
     @Bean
     public UserInfo userInfo() {
